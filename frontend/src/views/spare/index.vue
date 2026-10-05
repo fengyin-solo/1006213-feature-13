@@ -67,12 +67,15 @@
       <span>共 {{ total }} 条备品备件记录</span>
       <span v-if="errorMessage" class="error-text">{{ errorMessage }}</span>
     </footer>
+
+    <BusinessTodoPanel />
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
+import BusinessTodoPanel from '@/components/BusinessTodoPanel.vue'
 import {
   downloadEntries,
   listEntries,

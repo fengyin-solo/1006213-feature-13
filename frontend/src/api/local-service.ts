@@ -1,5 +1,6 @@
 import { MODULE_BY_KEY } from '@/data/modules'
 import { allRows, listRows, resetRows, saveRows } from '@/data/local-store'
+import { db as displacementDB } from '@/domain/displacement/store'
 import type { ActionResult, EntryRow, ModuleMeta, OverviewResult, PageResult } from '@/data/types'
 
 // 会写进数据的「往回走」动作：命中就把这条记录标成异常态，看板上能一眼看出来。
@@ -87,6 +88,17 @@ export function downloadEntries(key: string): void {
 export function loadOverview(): OverviewResult {
   const rows = allRows()
   const modules = [...MODULE_BY_KEY.values()].map((meta) => {
+    if (meta.key === 'displacement') {
+      // 位移模块从按测次组织的独立台账取数：现行观测行 / 待办 / 未关闭超限
+      const ledger = displacementDB()
+      const live = ledger.observations.filter((row) => !row.replaced)
+      return {
+        name: meta.name,
+        created: live.length,
+        pending: ledger.todos.filter((todo) => todo.status === '待办').length,
+        abnormal: ledger.alerts.filter((alert) => alert.status === 'open').length,
+      }
+    }
     const entries = rows[meta.key] ?? []
     return {
       name: meta.name,
